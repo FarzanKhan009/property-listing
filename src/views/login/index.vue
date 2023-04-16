@@ -77,6 +77,12 @@ export default {
         login(payload).then((res) => {
           const response = res.data
           console.log('response', response)
+          if(response.status ==false){
+            this.alert.show = true
+            this.alert.text = response?.message?.toString()
+            this.loginLoading = false;
+            return null;
+          }
           this.$store.dispatch('loginUser', response.data)
           this.loginLoading = false
         }).catch(err => {
