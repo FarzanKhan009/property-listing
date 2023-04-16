@@ -145,6 +145,18 @@
                   />
                 </v-col>
 
+                <v-col
+                  cols="12"
+                  md="6"
+                >
+                  <v-text-field
+                    label="Company Email"
+                    v-model="userDetail.company_email"
+                    class="purple-input"
+                  />
+                </v-col>
+                
+
                 <v-col cols="12">
                   <v-text-field
                     label="Company Address"
@@ -298,7 +310,7 @@ export default {
       ],
       file: null,
       userDetail: {
-        id: JSON.parse(localStorage.getItem('user')).id || '',
+        id: JSON.parse(localStorage.getItem('user'))?.id?.toString() || '',
         title: JSON.parse(localStorage.getItem('user')).title || '',
         firstName: JSON.parse(localStorage.getItem('user')).firstName || '',
         lastName: JSON.parse(localStorage.getItem('user')).lastName || '',
@@ -308,6 +320,8 @@ export default {
         company_name: JSON.parse(localStorage.getItem('user')).company_name || '',
         mobile_number: JSON.parse(localStorage.getItem('user')).mobile_number || '',
         company_logo: JSON.parse(localStorage.getItem('user')).company_logo || '',
+        company_email: JSON.parse(localStorage.getItem('user')).company_email || '',
+        acceptTerms:true,
       },
       stats: null,
       json_data: null,
@@ -442,13 +456,14 @@ export default {
       formData.append("file", this.file);
       uploadImage(formData).then(res => {
         console.log("🚀 ~ file: Users.vue:436 ~ uploadImage ~ res:", res.data)
-        let userInfo = JSON.parse(localStorage.getItem('user'))
+        let userInfo = JSON.parse(JSON.stringify(this.userDetail))
         userInfo['company_logo'] = res.data.path
         localStorage.setItem('user',JSON.stringify(userInfo));
-        updateUser(this.userDetail.id, {company_logo:res.data.path}).then(res => {
+        updateUser(this.userDetail.id,userInfo).then(res => {
           window.location.reload();
       }).catch(err => {
-          window.location.reload();
+          console.log("🚀 ~ file: Users.vue:465 ~ updateUser ~ err:", err)
+          
       })
        
         
@@ -458,14 +473,16 @@ export default {
     updateUser() {
 
       updateUser(this.userDetail.id, this.userDetail).then(res => {
+          localStorage.setItem('user', JSON.stringify(res.data.data))
           this.alert.show = true
           this.alert.type = 'success'
           this.alert.text = 'Profile updated!'
+          window.location.reload();
       }).catch(err => {
-          console.log(err.response.data.error)
+          console.log(err.response.data.message)
           this.alert.show = true
           this.alert.type = 'error'
-          this.alert.text = err.response.data.error.toString()
+          this.alert.text = err.response?.data?.message?.toString()
       })
 
     },
